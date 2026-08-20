@@ -3,6 +3,9 @@ const PALETTE = ["#5b48d1", "#c0392b", "#1f7a4d", "#b3901f", "#2f7f8f", "#a34fa1
 const els = {
   grid: document.getElementById("site-grid"),
   empty: document.getElementById("empty-state"),
+  emptyTitle: document.getElementById("empty-title"),
+  emptySub: document.getElementById("empty-sub"),
+  search: document.getElementById("search-input"),
   viewModal: document.getElementById("view-modal"),
   viewAvatar: document.getElementById("view-avatar"),
   viewName: document.getElementById("view-name"),
@@ -37,9 +40,23 @@ function makeId() {
 
 function render() {
   els.grid.innerHTML = "";
-  els.empty.classList.toggle("is-visible", sites.length === 0);
 
-  sites.forEach((site) => {
+  const query = els.search.value.trim().toLowerCase();
+  const visible = query ? sites.filter((s) => s.name.toLowerCase().includes(query)) : sites;
+
+  if (sites.length === 0) {
+    els.empty.classList.add("is-visible");
+    els.emptyTitle.textContent = "Todavía no agregaste ninguna contraseña.";
+    els.emptySub.textContent = "Tocá el botón + para agregar la primera.";
+  } else if (visible.length === 0) {
+    els.empty.classList.add("is-visible");
+    els.emptyTitle.textContent = "No se encontraron resultados.";
+    els.emptySub.textContent = "Probá con otro nombre.";
+  } else {
+    els.empty.classList.remove("is-visible");
+  }
+
+  visible.forEach((site) => {
     const tile = document.createElement("button");
     tile.type = "button";
     tile.className = "site-tile";
@@ -184,6 +201,8 @@ document.getElementById("btn-theme").addEventListener("click", () => {
   applyTheme(next);
   saveTheme(next);
 });
+
+els.search.addEventListener("input", render);
 
 /* ---------------- Importar / exportar ---------------- */
 

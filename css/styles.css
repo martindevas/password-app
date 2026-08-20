@@ -79,6 +79,32 @@ h1, h2, p { margin: 0; }
   padding: 4px 16px 100px;
 }
 
+/* ---------- Búsqueda ---------- */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 18px;
+  color: var(--faint);
+}
+.search-bar svg { width: 18px; height: 18px; flex-shrink: 0; }
+.search-bar input {
+  flex: 1;
+  border: none;
+  background: none;
+  outline: none;
+  color: var(--text);
+  font-size: 1rem;
+  font-family: inherit;
+  min-width: 0;
+}
+.search-bar input::placeholder { color: var(--faint); }
+.search-bar input::-webkit-search-cancel-button { cursor: pointer; }
+
 /* ---------- Grid ---------- */
 .site-grid {
   display: grid;
