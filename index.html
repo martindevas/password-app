@@ -26,6 +26,9 @@
       <button id="btn-lock-settings" class="icon-btn" aria-label="Bloqueo con Face ID / Touch ID">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4Z"/></svg>
       </button>
+      <button id="btn-transfer" class="icon-btn" aria-label="Importar o exportar contraseñas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="M16 21l4-4-4-4"/><path d="M20 17H4"/></svg>
+      </button>
       <button id="btn-theme" class="icon-btn" aria-label="Cambiar tema">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5A9 9 0 1 1 11.5 3a7 7 0 0 0 9.5 9.5z"/></svg>
       </button>
@@ -96,6 +99,21 @@
         <button type="submit" class="btn-primary btn-block">Guardar</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ---------- MODAL: IMPORTAR / EXPORTAR ---------- -->
+<div id="transfer-modal" class="modal-overlay">
+  <div class="modal-card">
+    <p class="modal-title">Importar o exportar</p>
+    <p class="small muted lock-desc">Exportá tus contraseñas a un archivo para pasarlas a otro dispositivo (por ejemplo tu celular), o importá un archivo que ya generaste ahí.</p>
+
+    <button type="button" id="btn-export" class="btn-secondary btn-block transfer-btn">Exportar contraseñas</button>
+    <button type="button" id="btn-import" class="btn-secondary btn-block transfer-btn">Importar contraseñas</button>
+    <input type="file" id="import-file-input" accept="application/json" hidden>
+    <p id="transfer-status" class="lock-error transfer-status"></p>
+
+    <button type="button" id="btn-close-transfer" class="link-back-center">Cerrar</button>
   </div>
 </div>
 

@@ -185,6 +185,79 @@ document.getElementById("btn-theme").addEventListener("click", () => {
   saveTheme(next);
 });
 
+/* ---------------- Importar / exportar ---------------- */
+
+const transferEls = {
+  btn: document.getElementById("btn-transfer"),
+  modal: document.getElementById("transfer-modal"),
+  closeBtn: document.getElementById("btn-close-transfer"),
+  exportBtn: document.getElementById("btn-export"),
+  importBtn: document.getElementById("btn-import"),
+  fileInput: document.getElementById("import-file-input"),
+  status: document.getElementById("transfer-status"),
+};
+
+transferEls.btn.addEventListener("click", () => {
+  transferEls.status.textContent = "";
+  transferEls.modal.classList.add("is-open");
+});
+transferEls.closeBtn.addEventListener("click", () => {
+  transferEls.modal.classList.remove("is-open");
+});
+transferEls.modal.addEventListener("click", (e) => {
+  if (e.target === transferEls.modal) transferEls.modal.classList.remove("is-open");
+});
+
+transferEls.exportBtn.addEventListener("click", () => {
+  if (sites.length === 0) {
+    transferEls.status.textContent = "No hay contraseñas para exportar.";
+    return;
+  }
+  const data = sites.map((s) => ({ name: s.name, password: s.password }));
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const date = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = "claves-" + date + ".json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  transferEls.status.textContent = "Se exportó " + sites.length + " contraseña" + (sites.length === 1 ? "" : "s") + ".";
+});
+
+transferEls.importBtn.addEventListener("click", () => {
+  transferEls.fileInput.click();
+});
+
+transferEls.fileInput.addEventListener("change", () => {
+  const file = transferEls.fileInput.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      if (!Array.isArray(parsed)) throw new Error("formato inválido");
+      let added = 0;
+      parsed.forEach((item) => {
+        if (!item || typeof item.name !== "string" || typeof item.password !== "string") return;
+        const exists = sites.some((s) => s.name === item.name && s.password === item.password);
+        if (exists) return;
+        sites.push({ id: makeId(), name: item.name, password: item.password });
+        added++;
+      });
+      saveSites(sites);
+      render();
+      transferEls.status.textContent = "Se importó " + added + " contraseña" + (added === 1 ? "" : "s") + " nueva" + (added === 1 ? "" : "s") + ".";
+    } catch (e) {
+      transferEls.status.textContent = "El archivo no tiene un formato válido.";
+    }
+    transferEls.fileInput.value = "";
+  };
+  reader.readAsText(file);
+});
+
 /* ---------------- Bloqueo Face ID / Touch ID ---------------- */
 
 const lockEls = {

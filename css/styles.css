@@ -314,3 +314,14 @@ input[type="text"]:focus { outline: 2px solid var(--accent); outline-offset: 1px
 
 .lock-status-line { margin-bottom: 10px; }
 .lock-desc { margin-bottom: 18px; line-height: 1.4; }
+
+/* ---------------- Importar / exportar ---------------- */
+
+.transfer-btn { margin-bottom: 10px; }
+p.transfer-status {
+  color: var(--accent);
+  min-height: 1.2em;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin: 6px 0 0;
+}
