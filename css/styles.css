@@ -207,12 +207,29 @@ h1, h2, p { margin: 0; }
 }
 .modal-overlay.is-open { display: flex; }
 .modal-card {
+  position: relative;
   background: var(--card-bg);
   border-radius: 16px;
   padding: 22px;
   max-width: 380px;
   width: 100%;
 }
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: var(--surface-2);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.modal-close svg { width: 16px; height: 16px; }
 .modal-title { font-weight: 600; font-size: 1.05rem; margin-bottom: 16px; }
 .modal-actions { display: flex; gap: 10px; margin-top: 4px; }
 .modal-actions .btn-block { margin: 0; }

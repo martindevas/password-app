@@ -98,6 +98,7 @@ function closeView() {
 }
 
 document.getElementById("btn-close-view").addEventListener("click", closeView);
+document.getElementById("btn-close-view-x").addEventListener("click", closeView);
 els.viewModal.addEventListener("click", (e) => {
   if (e.target === els.viewModal) closeView();
 });
@@ -159,6 +160,7 @@ function closeEdit() {
 
 document.getElementById("btn-add").addEventListener("click", () => openEdit(null));
 document.getElementById("btn-cancel-edit").addEventListener("click", closeEdit);
+document.getElementById("btn-close-edit-x").addEventListener("click", closeEdit);
 els.editModal.addEventListener("click", (e) => {
   if (e.target === els.editModal) closeEdit();
 });
@@ -210,6 +212,7 @@ const transferEls = {
   btn: document.getElementById("btn-transfer"),
   modal: document.getElementById("transfer-modal"),
   closeBtn: document.getElementById("btn-close-transfer"),
+  closeBtnX: document.getElementById("btn-close-transfer-x"),
   exportBtn: document.getElementById("btn-export"),
   importBtn: document.getElementById("btn-import"),
   fileInput: document.getElementById("import-file-input"),
@@ -221,6 +224,9 @@ transferEls.btn.addEventListener("click", () => {
   transferEls.modal.classList.add("is-open");
 });
 transferEls.closeBtn.addEventListener("click", () => {
+  transferEls.modal.classList.remove("is-open");
+});
+transferEls.closeBtnX.addEventListener("click", () => {
   transferEls.modal.classList.remove("is-open");
 });
 transferEls.modal.addEventListener("click", (e) => {
@@ -289,6 +295,7 @@ const lockEls = {
   statusText: document.getElementById("lock-status-text"),
   toggleBtn: document.getElementById("btn-toggle-lock"),
   closeSettings: document.getElementById("btn-close-lock-settings"),
+  closeSettingsX: document.getElementById("btn-close-lock-settings-x"),
 };
 
 function showLockScreen() {
@@ -330,6 +337,9 @@ lockEls.settingsBtn.addEventListener("click", () => {
   lockEls.settingsModal.classList.add("is-open");
 });
 lockEls.closeSettings.addEventListener("click", () => {
+  lockEls.settingsModal.classList.remove("is-open");
+});
+lockEls.closeSettingsX.addEventListener("click", () => {
   lockEls.settingsModal.classList.remove("is-open");
 });
 lockEls.settingsModal.addEventListener("click", (e) => {
