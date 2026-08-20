@@ -104,6 +104,27 @@
           </button>
         </div>
       </label>
+
+      <div class="tabs" id="password-tabs">
+        <button type="button" class="tab-btn is-active" data-tab="manual">Generar al azar</button>
+        <button type="button" class="tab-btn" data-tab="image">Desde una imagen</button>
+      </div>
+
+      <div id="tab-manual" class="tab-panel is-active">
+        <p class="small muted tab-hint">Tocá el dado de arriba para generar una contraseña aleatoria, o escribí la tuya.</p>
+      </div>
+
+      <div id="tab-image" class="tab-panel">
+        <p class="small muted tab-hint">Elegí o sacá una foto de los requisitos que te pide el sitio (ej: "8 a 20 caracteres, con mayúscula, número y símbolo") y te genero una contraseña que los cumpla.</p>
+        <button type="button" id="btn-pick-image" class="btn-secondary btn-block image-btn">Elegir imagen</button>
+        <button type="button" id="btn-take-photo" class="btn-secondary btn-block image-btn">Tomar foto</button>
+        <input type="file" id="image-file-input" accept="image/*" hidden>
+        <input type="file" id="camera-file-input" accept="image/*" capture="environment" hidden>
+        <img id="image-preview" class="image-preview" alt="Vista previa">
+        <p id="ocr-status" class="small ocr-status"></p>
+        <p id="ocr-detected" class="small ocr-detected"></p>
+      </div>
+
       <div class="modal-actions">
         <button type="button" id="btn-cancel-edit" class="btn-secondary btn-block">Cancelar</button>
         <button type="submit" class="btn-primary btn-block">Guardar</button>

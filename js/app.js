@@ -148,6 +148,7 @@ function openEdit(site) {
   els.editTitle.textContent = site ? "Editar contraseña" : "Agregar contraseña";
   els.editName.value = site ? site.name : "";
   els.editPassword.value = site ? site.password : "";
+  resetImageTab();
   els.editModal.classList.add("is-open");
   els.editName.focus();
 }
@@ -155,6 +156,7 @@ function openEdit(site) {
 function closeEdit() {
   els.editModal.classList.remove("is-open");
   els.editForm.reset();
+  resetImageTab();
   editingId = null;
 }
 
@@ -203,6 +205,160 @@ document.getElementById("btn-theme").addEventListener("click", () => {
   applyTheme(next);
   saveTheme(next);
 });
+
+/* ---------------- Generar contraseña desde imagen ---------------- */
+
+const imageEls = {
+  tabs: document.querySelectorAll("#password-tabs .tab-btn"),
+  tabManual: document.getElementById("tab-manual"),
+  tabImage: document.getElementById("tab-image"),
+  pickBtn: document.getElementById("btn-pick-image"),
+  photoBtn: document.getElementById("btn-take-photo"),
+  fileInput: document.getElementById("image-file-input"),
+  cameraInput: document.getElementById("camera-file-input"),
+  preview: document.getElementById("image-preview"),
+  status: document.getElementById("ocr-status"),
+  detected: document.getElementById("ocr-detected"),
+};
+
+function setActiveTab(tab) {
+  imageEls.tabs.forEach((b) => b.classList.toggle("is-active", b.dataset.tab === tab));
+  imageEls.tabManual.classList.toggle("is-active", tab === "manual");
+  imageEls.tabImage.classList.toggle("is-active", tab === "image");
+}
+
+imageEls.tabs.forEach((btn) => {
+  btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
+});
+
+function resetImageTab() {
+  setActiveTab("manual");
+  imageEls.preview.classList.remove("is-visible");
+  imageEls.preview.src = "";
+  imageEls.status.textContent = "";
+  imageEls.detected.textContent = "";
+  imageEls.fileInput.value = "";
+  imageEls.cameraInput.value = "";
+}
+
+let tesseractLoadPromise = null;
+function loadTesseract() {
+  if (window.Tesseract) return Promise.resolve();
+  if (tesseractLoadPromise) return tesseractLoadPromise;
+  tesseractLoadPromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("No se pudo cargar el analizador."));
+    document.head.appendChild(script);
+  });
+  return tesseractLoadPromise;
+}
+
+function parsePasswordRequirements(text) {
+  const lower = text.toLowerCase();
+  const req = { minLength: 8, maxLength: 20, upper: false, lower: false, number: false, special: false };
+
+  const rangeMatch = lower.match(/(\d{1,2})\s*(?:-|a|y|to)\s*(\d{1,2})\s*(?:car|char|dig)/);
+  if (rangeMatch) {
+    req.minLength = parseInt(rangeMatch[1], 10);
+    req.maxLength = parseInt(rangeMatch[2], 10);
+  } else {
+    const minMatch = lower.match(/(?:mínimo|minimo|min|at least|al menos)\D{0,10}(\d{1,2})/);
+    if (minMatch) req.minLength = parseInt(minMatch[1], 10);
+    const maxMatch = lower.match(/(?:máximo|maximo|max|hasta)\D{0,10}(\d{1,2})/);
+    if (maxMatch) req.maxLength = parseInt(maxMatch[1], 10);
+  }
+  if (req.minLength < 4) req.minLength = 4;
+  if (req.maxLength < req.minLength) req.maxLength = req.minLength + 8;
+
+  req.upper = /mayúscul|mayuscul|uppercase|capital letter/.test(lower);
+  req.lower = /minúscul|minuscul|lowercase/.test(lower);
+  req.number = /número|numero|digit|numeric|\bnumber/.test(lower);
+  req.special = /especial|símbolo|simbolo|special char|punctuation|\bsymbol|[!@#$%^&*]/.test(lower);
+
+  if (!req.upper && !req.lower && !req.number && !req.special) {
+    req.upper = req.lower = req.number = req.special = true;
+  }
+  return req;
+}
+
+function describeRequirements(req) {
+  const parts = [req.minLength + "-" + req.maxLength + " caracteres"];
+  if (req.upper) parts.push("mayúscula");
+  if (req.lower) parts.push("minúscula");
+  if (req.number) parts.push("número");
+  if (req.special) parts.push("símbolo");
+  return parts.join(", ");
+}
+
+function generatePasswordFromRequirements(req) {
+  const upperChars = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const lowerChars = "abcdefghijkmnopqrstuvwxyz";
+  const numberChars = "23456789";
+  const specialChars = "!@#$%&*?";
+
+  let pool = "";
+  const mandatory = [];
+  if (req.upper) { pool += upperChars; mandatory.push(upperChars); }
+  if (req.lower) { pool += lowerChars; mandatory.push(lowerChars); }
+  if (req.number) { pool += numberChars; mandatory.push(numberChars); }
+  if (req.special) { pool += specialChars; mandatory.push(specialChars); }
+  if (!pool) { pool = upperChars + lowerChars + numberChars; mandatory.push(upperChars, lowerChars, numberChars); }
+
+  const targetLength = Math.min(Math.max(req.minLength, mandatory.length), req.maxLength || 20);
+
+  const passChars = mandatory.map((set) => set[Math.floor(Math.random() * set.length)]);
+  while (passChars.length < targetLength) {
+    passChars.push(pool[Math.floor(Math.random() * pool.length)]);
+  }
+  for (let i = passChars.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [passChars[i], passChars[j]] = [passChars[j], passChars[i]];
+  }
+  return passChars.join("");
+}
+
+async function analyzeImage(file) {
+  imageEls.detected.textContent = "";
+  imageEls.status.textContent = "Cargando analizador de imágenes...";
+  try {
+    await loadTesseract();
+  } catch (e) {
+    imageEls.status.textContent = "No se pudo cargar el analizador. Revisá tu conexión.";
+    return;
+  }
+  imageEls.status.textContent = "Analizando imagen...";
+  try {
+    const { data } = await Tesseract.recognize(file, "eng");
+    const text = data && data.text ? data.text : "";
+    if (!text.trim()) {
+      imageEls.status.textContent = "No pude leer texto en la imagen. Probá con otra o cargá la contraseña manualmente.";
+      return;
+    }
+    const req = parsePasswordRequirements(text);
+    const generated = generatePasswordFromRequirements(req);
+    els.editPassword.value = generated;
+    imageEls.status.textContent = "";
+    imageEls.detected.textContent = "Detecté: " + describeRequirements(req) + ". Generé una contraseña que lo cumple — la ves arriba, revisala antes de guardar.";
+    setActiveTab("manual");
+  } catch (e) {
+    imageEls.status.textContent = "Hubo un error analizando la imagen.";
+  }
+}
+
+function handleImageChange(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  imageEls.preview.src = URL.createObjectURL(file);
+  imageEls.preview.classList.add("is-visible");
+  analyzeImage(file);
+}
+
+imageEls.pickBtn.addEventListener("click", () => imageEls.fileInput.click());
+imageEls.photoBtn.addEventListener("click", () => imageEls.cameraInput.click());
+imageEls.fileInput.addEventListener("change", handleImageChange);
+imageEls.cameraInput.addEventListener("change", handleImageChange);
 
 els.search.addEventListener("input", render);
 
