@@ -10,6 +10,7 @@ const els = {
   viewAvatar: document.getElementById("view-avatar"),
   viewName: document.getElementById("view-name"),
   viewPassword: document.getElementById("view-password"),
+  toggleVisibility: document.getElementById("btn-toggle-visibility"),
   copyStatus: document.getElementById("copy-status"),
   editModal: document.getElementById("edit-modal"),
   editTitle: document.getElementById("edit-title"),
@@ -21,6 +22,10 @@ const els = {
 let sites = loadSites();
 let activeId = null; // site currently open in the view modal
 let editingId = null; // null = adding a new site
+let passwordVisible = false;
+
+const EYE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a20.3 20.3 0 0 1 5.06-6.06M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a20.32 20.32 0 0 1-3.22 4.62M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>';
 
 function colorFor(id) {
   let hash = 0;
@@ -80,14 +85,23 @@ function render() {
 
 /* ---------------- Ver contraseña ---------------- */
 
+function updatePasswordDisplay() {
+  const site = sites.find((s) => s.id === activeId);
+  if (!site) return;
+  els.viewPassword.textContent = passwordVisible ? site.password : "•".repeat(site.password.length);
+  els.toggleVisibility.innerHTML = passwordVisible ? EYE_OFF_ICON : EYE_ICON;
+  els.toggleVisibility.setAttribute("aria-label", passwordVisible ? "Ocultar contraseña" : "Mostrar contraseña");
+}
+
 function openView(id) {
   const site = sites.find((s) => s.id === id);
   if (!site) return;
   activeId = id;
+  passwordVisible = false;
   els.viewAvatar.style.background = colorFor(site.id);
   els.viewAvatar.textContent = initials(site.name);
   els.viewName.textContent = site.name;
-  els.viewPassword.textContent = site.password;
+  updatePasswordDisplay();
   els.copyStatus.textContent = "";
   els.viewModal.classList.add("is-open");
 }
@@ -96,6 +110,11 @@ function closeView() {
   els.viewModal.classList.remove("is-open");
   activeId = null;
 }
+
+els.toggleVisibility.addEventListener("click", () => {
+  passwordVisible = !passwordVisible;
+  updatePasswordDisplay();
+});
 
 document.getElementById("btn-close-view").addEventListener("click", closeView);
 document.getElementById("btn-close-view-x").addEventListener("click", closeView);
