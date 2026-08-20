@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#5b48d1">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Claves">
+<title>Claves</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div id="app-shell">
+
+  <header class="topbar">
+    <div>
+      <p class="topbar-brand">Claves</p>
+      <h1>Mis contraseñas</h1>
+    </div>
+    <div class="topbar-actions">
+      <button id="btn-lock-settings" class="icon-btn" aria-label="Bloqueo con Face ID / Touch ID">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4Z"/></svg>
+      </button>
+      <button id="btn-theme" class="icon-btn" aria-label="Cambiar tema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5A9 9 0 1 1 11.5 3a7 7 0 0 0 9.5 9.5z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <div id="site-grid" class="site-grid"></div>
+    <div id="empty-state" class="empty-state">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V8a5 5 0 0 1 10 0v3"/></svg>
+      </div>
+      <p>Todavía no agregaste ninguna contraseña.</p>
+      <p class="muted small">Tocá el botón + para agregar la primera.</p>
+    </div>
+  </main>
+
+  <button id="btn-add" class="fab" aria-label="Agregar contraseña">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+
+</div>
+
+<!-- ---------- MODAL: VER CONTRASEÑA ---------- -->
+<div id="view-modal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="view-head">
+      <div id="view-avatar" class="avatar avatar-lg"></div>
+      <h2 id="view-name" class="view-name"></h2>
+    </div>
+
+    <div class="password-box">
+      <span id="view-password" class="password-text"></span>
+      <button id="btn-copy" class="icon-btn" aria-label="Copiar contraseña">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>
+      </button>
+    </div>
+    <p id="copy-status" class="copy-status"></p>
+
+    <div class="modal-actions">
+      <button type="button" id="btn-edit" class="btn-secondary btn-block">Editar</button>
+      <button type="button" id="btn-delete" class="btn-danger btn-block">Eliminar</button>
+    </div>
+    <button type="button" id="btn-close-view" class="link-back-center">Cerrar</button>
+  </div>
+</div>
+
+<!-- ---------- MODAL: AGREGAR / EDITAR ---------- -->
+<div id="edit-modal" class="modal-overlay">
+  <div class="modal-card">
+    <p id="edit-title" class="modal-title">Agregar contraseña</p>
+    <form id="edit-form">
+      <label class="field">
+        <span>Sitio</span>
+        <input type="text" id="edit-name" placeholder="Ej: Facebook" required maxlength="40">
+      </label>
+      <label class="field">
+        <span>Contraseña</span>
+        <div class="password-input-row">
+          <input type="text" id="edit-password" placeholder="Contraseña" required maxlength="100">
+          <button type="button" id="btn-generate" class="icon-btn" aria-label="Generar contraseña">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+          </button>
+        </div>
+      </label>
+      <div class="modal-actions">
+        <button type="button" id="btn-cancel-edit" class="btn-secondary btn-block">Cancelar</button>
+        <button type="submit" class="btn-primary btn-block">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ---------- PANTALLA DE BLOQUEO ---------- -->
+<div id="lock-screen" class="lock-screen">
+  <div class="lock-content">
+    <div class="lock-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4Z"/></svg>
+    </div>
+    <h2>Claves está bloqueada</h2>
+    <p class="muted small">Usá Face ID o Touch ID para ver tus contraseñas.</p>
+    <button type="button" id="btn-unlock" class="btn-primary btn-block">Desbloquear</button>
+    <p id="lock-error" class="lock-error"></p>
+    <button type="button" id="btn-reset-lock" class="link-back-center">¿No podés desbloquear? Restablecer bloqueo</button>
+  </div>
+</div>
+
+<!-- ---------- MODAL: CONFIGURAR BLOQUEO ---------- -->
+<div id="lock-settings-modal" class="modal-overlay">
+  <div class="modal-card">
+    <p class="modal-title">Bloqueo con Face ID / Touch ID</p>
+    <p class="small muted lock-status-line">Estado: <strong id="lock-status-text">Desactivado</strong></p>
+    <p class="small muted lock-desc">Cuando está activado, la app va a pedir Face ID o Touch ID cada vez que la abras. Solo funciona si la app se sirve por HTTPS (o localhost) y el dispositivo tiene sensor biométrico.</p>
+    <button type="button" id="btn-toggle-lock" class="btn-primary btn-block">Activar Face ID / Touch ID</button>
+    <button type="button" id="btn-close-lock-settings" class="link-back-center">Cerrar</button>
+  </div>
+</div>
+
+<script src="js/storage.js"></script>
+<script src="js/webauthn.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
