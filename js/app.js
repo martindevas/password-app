@@ -148,6 +148,7 @@ function openEdit(site) {
   els.editTitle.textContent = site ? "Editar contraseña" : "Agregar contraseña";
   els.editName.value = site ? site.name : "";
   els.editPassword.value = site ? site.password : "";
+  document.getElementById("edit-copy-status").textContent = "";
   resetImageTab();
   els.editModal.classList.add("is-open");
   els.editName.focus();
@@ -156,6 +157,7 @@ function openEdit(site) {
 function closeEdit() {
   els.editModal.classList.remove("is-open");
   els.editForm.reset();
+  document.getElementById("edit-copy-status").textContent = "";
   resetImageTab();
   editingId = null;
 }
@@ -174,7 +176,28 @@ function generateRandomPassword() {
   els.editPassword.value = pass;
 }
 
-document.getElementById("btn-generate").addEventListener("click", generateRandomPassword);
+const editCopyStatus = document.getElementById("edit-copy-status");
+
+document.getElementById("btn-copy-edit-password").addEventListener("click", async () => {
+  const password = els.editPassword.value;
+  if (!password) return;
+  try {
+    await navigator.clipboard.writeText(password);
+  } catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = password;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+  }
+  editCopyStatus.textContent = "Copiado";
+  setTimeout(() => {
+    if (editCopyStatus) editCopyStatus.textContent = "";
+  }, 1500);
+});
 
 els.editForm.addEventListener("submit", (e) => {
   e.preventDefault();
