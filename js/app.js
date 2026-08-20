@@ -167,12 +167,14 @@ els.editModal.addEventListener("click", (e) => {
   if (e.target === els.editModal) closeEdit();
 });
 
-document.getElementById("btn-generate").addEventListener("click", () => {
+function generateRandomPassword() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*";
   let pass = "";
   for (let i = 0; i < 16; i++) pass += chars[Math.floor(Math.random() * chars.length)];
   els.editPassword.value = pass;
-});
+}
+
+document.getElementById("btn-generate").addEventListener("click", generateRandomPassword);
 
 els.editForm.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -228,7 +230,10 @@ function setActiveTab(tab) {
 }
 
 imageEls.tabs.forEach((btn) => {
-  btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
+  btn.addEventListener("click", () => {
+    setActiveTab(btn.dataset.tab);
+    if (btn.dataset.tab === "manual") generateRandomPassword();
+  });
 });
 
 function resetImageTab() {
