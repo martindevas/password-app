@@ -602,52 +602,75 @@ function hideLoginScreen() {
 function authErrorMessage(err) {
   const map = {
     "auth/invalid-email": "El email no es válido.",
-    "auth/user-not-found": "No existe una cuenta con ese email.",
+    "auth/user-not-found": "No existe una cuenta con ese email. Tocá \"Crear cuenta nueva\".",
     "auth/wrong-password": "Contraseña incorrecta.",
-    "auth/invalid-credential": "Email o contraseña incorrectos.",
-    "auth/email-already-in-use": "Ya existe una cuenta con ese email.",
+    "auth/invalid-credential": "Email o contraseña incorrectos. Si es tu primera vez, tocá \"Crear cuenta nueva\".",
+    "auth/email-already-in-use": "Ya existe una cuenta con ese email. Probá \"Iniciar sesión\".",
     "auth/weak-password": "La contraseña tiene que tener al menos 6 caracteres.",
     "auth/too-many-requests": "Demasiados intentos. Probá de nuevo en un rato.",
+    "auth/network-request-failed": "Sin conexión. Revisá tu internet e intentá de nuevo.",
   };
   return map[err.code] || "Ocurrió un error. Intentá de nuevo.";
 }
 
+let authBusy = false;
+
+function setAuthBusy(busy, message) {
+  authBusy = busy;
+  loginEls.form.querySelector("button[type=submit]").disabled = busy;
+  loginEls.signupBtn.disabled = busy;
+  loginEls.forgotBtn.disabled = busy;
+  if (busy) loginEls.error.textContent = message || "";
+}
+
 loginEls.form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  loginEls.error.textContent = "";
+  if (authBusy) return;
+  setAuthBusy(true, "Iniciando sesión...");
   try {
     await auth.signInWithEmailAndPassword(loginEls.email.value.trim(), loginEls.password.value);
+    loginEls.error.textContent = "";
   } catch (err) {
     loginEls.error.textContent = authErrorMessage(err);
+  } finally {
+    setAuthBusy(false);
   }
 });
 
 loginEls.signupBtn.addEventListener("click", async () => {
-  loginEls.error.textContent = "";
+  if (authBusy) return;
   const email = loginEls.email.value.trim();
   const password = loginEls.password.value;
   if (!email || password.length < 6) {
     loginEls.error.textContent = "Completá el email y una contraseña de al menos 6 caracteres.";
     return;
   }
+  setAuthBusy(true, "Creando cuenta...");
   try {
     await auth.createUserWithEmailAndPassword(email, password);
+    loginEls.error.textContent = "";
   } catch (err) {
     loginEls.error.textContent = authErrorMessage(err);
+  } finally {
+    setAuthBusy(false);
   }
 });
 
 loginEls.forgotBtn.addEventListener("click", async () => {
+  if (authBusy) return;
   const email = loginEls.email.value.trim();
   if (!email) {
     loginEls.error.textContent = "Escribí tu email arriba y volvé a tocar este botón.";
     return;
   }
+  setAuthBusy(true, "Enviando...");
   try {
     await auth.sendPasswordResetEmail(email);
     loginEls.error.textContent = "Te enviamos un mail para restablecer tu contraseña.";
   } catch (err) {
     loginEls.error.textContent = authErrorMessage(err);
+  } finally {
+    setAuthBusy(false);
   }
 });
 
