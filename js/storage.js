@@ -1,9 +1,9 @@
-const STORAGE_KEY = "password-app-sites";
+const CACHE_KEY = "password-app-sites-cache";
 const THEME_KEY = "password-app-theme";
 
-function loadSites() {
+function loadCachedSites() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
@@ -12,8 +12,12 @@ function loadSites() {
   }
 }
 
-function saveSites(sites) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(sites));
+function cacheSites(sites) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(sites));
+  } catch (e) {
+    // ignore
+  }
 }
 
 function loadTheme() {

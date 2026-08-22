@@ -19,7 +19,7 @@ const els = {
   editPassword: document.getElementById("edit-password"),
 };
 
-let sites = loadSites();
+let sites = loadCachedSites();
 let activeId = null; // site currently open in the view modal
 let editingId = null; // null = adding a new site
 let passwordVisible = false;
@@ -148,8 +148,7 @@ document.getElementById("btn-delete").addEventListener("click", () => {
   if (!site) return;
   if (!confirm('¿Eliminar "' + site.name + '"?')) return;
   sites = sites.filter((s) => s.id !== activeId);
-  saveSites(sites);
-  render();
+  persistSites();
   closeView();
 });
 
@@ -233,8 +232,7 @@ els.editForm.addEventListener("submit", (e) => {
   } else {
     sites.push({ id: makeId(), name, password });
   }
-  saveSites(sites);
-  render();
+  persistSites();
   closeEdit();
 });
 
@@ -475,8 +473,7 @@ transferEls.fileInput.addEventListener("change", () => {
         sites.push({ id: makeId(), name: item.name, password: item.password });
         added++;
       });
-      saveSites(sites);
-      render();
+      persistSites();
       transferEls.status.textContent = "Se importó " + added + " contraseña" + (added === 1 ? "" : "s") + " nueva" + (added === 1 ? "" : "s") + ".";
     } catch (e) {
       transferEls.status.textContent = "El archivo no tiene un formato válido.";
@@ -571,8 +568,145 @@ lockEls.toggleBtn.addEventListener("click", async () => {
   }
 });
 
+/* ---------------- Cuenta / Login ---------------- */
+
+const loginEls = {
+  screen: document.getElementById("login-screen"),
+  form: document.getElementById("login-form"),
+  email: document.getElementById("login-email"),
+  password: document.getElementById("login-password"),
+  error: document.getElementById("login-error"),
+  signupBtn: document.getElementById("btn-signup"),
+  forgotBtn: document.getElementById("btn-forgot"),
+};
+
+const accountEls = {
+  btn: document.getElementById("btn-account"),
+  modal: document.getElementById("account-modal"),
+  closeBtn: document.getElementById("btn-close-account-x"),
+  email: document.getElementById("account-email"),
+  logoutBtn: document.getElementById("btn-logout"),
+};
+
+let unsubscribeSites = null;
+
+function showLoginScreen() {
+  loginEls.error.textContent = "";
+  loginEls.screen.classList.add("is-open");
+}
+
+function hideLoginScreen() {
+  loginEls.screen.classList.remove("is-open");
+}
+
+function authErrorMessage(err) {
+  const map = {
+    "auth/invalid-email": "El email no es válido.",
+    "auth/user-not-found": "No existe una cuenta con ese email.",
+    "auth/wrong-password": "Contraseña incorrecta.",
+    "auth/invalid-credential": "Email o contraseña incorrectos.",
+    "auth/email-already-in-use": "Ya existe una cuenta con ese email.",
+    "auth/weak-password": "La contraseña tiene que tener al menos 6 caracteres.",
+    "auth/too-many-requests": "Demasiados intentos. Probá de nuevo en un rato.",
+  };
+  return map[err.code] || "Ocurrió un error. Intentá de nuevo.";
+}
+
+loginEls.form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  loginEls.error.textContent = "";
+  try {
+    await auth.signInWithEmailAndPassword(loginEls.email.value.trim(), loginEls.password.value);
+  } catch (err) {
+    loginEls.error.textContent = authErrorMessage(err);
+  }
+});
+
+loginEls.signupBtn.addEventListener("click", async () => {
+  loginEls.error.textContent = "";
+  const email = loginEls.email.value.trim();
+  const password = loginEls.password.value;
+  if (!email || password.length < 6) {
+    loginEls.error.textContent = "Completá el email y una contraseña de al menos 6 caracteres.";
+    return;
+  }
+  try {
+    await auth.createUserWithEmailAndPassword(email, password);
+  } catch (err) {
+    loginEls.error.textContent = authErrorMessage(err);
+  }
+});
+
+loginEls.forgotBtn.addEventListener("click", async () => {
+  const email = loginEls.email.value.trim();
+  if (!email) {
+    loginEls.error.textContent = "Escribí tu email arriba y volvé a tocar este botón.";
+    return;
+  }
+  try {
+    await auth.sendPasswordResetEmail(email);
+    loginEls.error.textContent = "Te enviamos un mail para restablecer tu contraseña.";
+  } catch (err) {
+    loginEls.error.textContent = authErrorMessage(err);
+  }
+});
+
+accountEls.btn.addEventListener("click", () => {
+  accountEls.email.textContent = (auth.currentUser && auth.currentUser.email) || "";
+  accountEls.modal.classList.add("is-open");
+});
+accountEls.closeBtn.addEventListener("click", () => accountEls.modal.classList.remove("is-open"));
+accountEls.modal.addEventListener("click", (e) => {
+  if (e.target === accountEls.modal) accountEls.modal.classList.remove("is-open");
+});
+accountEls.logoutBtn.addEventListener("click", () => {
+  if (!confirm("¿Cerrar sesión?")) return;
+  auth.signOut();
+  accountEls.modal.classList.remove("is-open");
+});
+
+function persistSites() {
+  cacheSites(sites);
+  render();
+  const user = auth.currentUser;
+  if (!user) return;
+  db.collection("users").doc(user.uid).set({ sites: sites }, { merge: true }).catch(() => {});
+}
+
+function subscribeToSites(uid) {
+  if (unsubscribeSites) unsubscribeSites();
+  unsubscribeSites = db.collection("users").doc(uid).onSnapshot(
+    (doc) => {
+      const data = doc.data();
+      sites = data && Array.isArray(data.sites) ? data.sites : [];
+      cacheSites(sites);
+      render();
+    },
+    () => {
+      // sin conexión o sin permiso: seguimos mostrando lo que haya en caché local
+    }
+  );
+}
+
+auth.onAuthStateChanged((user) => {
+  if (user) {
+    hideLoginScreen();
+    subscribeToSites(user.uid);
+    if (lockEnabled()) showLockScreen();
+  } else {
+    if (unsubscribeSites) {
+      unsubscribeSites();
+      unsubscribeSites = null;
+    }
+    sites = [];
+    render();
+    hideLockScreen();
+    showLoginScreen();
+  }
+});
+
 /* ---------------- Init ---------------- */
 
 applyTheme(loadTheme());
 render();
-if (lockEnabled()) showLockScreen();
+showLoginScreen();

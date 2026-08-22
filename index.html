@@ -23,6 +23,9 @@
       <h1>Mis contraseñas</h1>
     </div>
     <div class="topbar-actions">
+      <button id="btn-account" class="icon-btn" aria-label="Mi cuenta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+      </button>
       <button id="btn-lock-settings" class="icon-btn" aria-label="Bloqueo con Face ID / Touch ID">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4Z"/></svg>
       </button>
@@ -183,6 +186,48 @@
   </div>
 </div>
 
+<!-- ---------- MODAL: MI CUENTA ---------- -->
+<div id="account-modal" class="modal-overlay">
+  <div class="modal-card">
+    <button type="button" id="btn-close-account-x" class="modal-close" aria-label="Cerrar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <p class="modal-title">Mi cuenta</p>
+    <p class="small muted lock-status-line">Conectado como <strong id="account-email"></strong></p>
+    <p class="small muted lock-desc">Tus contraseñas se sincronizan automáticamente con esta cuenta en todos tus dispositivos.</p>
+    <button type="button" id="btn-logout" class="btn-danger btn-block">Cerrar sesión</button>
+  </div>
+</div>
+
+<!-- ---------- PANTALLA DE LOGIN ---------- -->
+<div id="login-screen" class="lock-screen">
+  <div class="lock-content">
+    <div class="lock-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+    </div>
+    <h2>Claves</h2>
+    <p class="muted small">Iniciá sesión para sincronizar tus contraseñas entre tus dispositivos.</p>
+    <form id="login-form">
+      <label class="field">
+        <span>Email</span>
+        <input type="email" id="login-email" autocomplete="username" required>
+      </label>
+      <label class="field">
+        <span>Contraseña</span>
+        <input type="password" id="login-password" autocomplete="current-password" minlength="6" required>
+      </label>
+      <button type="submit" id="btn-login" class="btn-primary btn-block">Iniciar sesión</button>
+    </form>
+    <button type="button" id="btn-signup" class="btn-secondary btn-block">Crear cuenta nueva</button>
+    <p id="login-error" class="lock-error"></p>
+    <button type="button" id="btn-forgot" class="link-back-center">¿Olvidaste tu contraseña?</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase-init.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/webauthn.js"></script>
 <script src="js/app.js"></script>
