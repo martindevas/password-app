@@ -711,7 +711,10 @@ function subscribeToSites(uid) {
   );
 }
 
+const loadingScreen = document.getElementById("loading-screen");
+
 auth.onAuthStateChanged((user) => {
+  loadingScreen.classList.remove("is-open");
   if (user) {
     hideLoginScreen();
     subscribeToSites(user.uid);
@@ -732,4 +735,3 @@ auth.onAuthStateChanged((user) => {
 
 applyTheme(loadTheme());
 render();
-showLoginScreen();

@@ -388,6 +388,8 @@ input[type="text"]:focus { outline: 2px solid var(--accent); outline-offset: 1px
   justify-content: center;
 }
 .lock-icon svg { width: 30px; height: 30px; }
+.lock-icon.spin svg { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .lock-error {
   min-height: 1.2em;
